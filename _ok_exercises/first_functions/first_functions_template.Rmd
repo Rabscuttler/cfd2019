@@ -25,6 +25,10 @@ For background, please read the [functions]({{ site.baseurl
 }}chapters/07/functions) introduction.
 
 ```{python}
+# Run this cell
+# Import the array library
+import numpy as np
+
 # Load the OKpy test library and tests.
 from client.api.notebook import Notebook
 ok = Notebook('first_functions.ok')
@@ -160,6 +164,76 @@ divide(10, 2)
 _ = ok.grade('q_5_divide')
 ```
 
+## Back to simulations
+
+Remember the three girls simulations?  We initially assumed that the chance of any one child being a girl was 0.5.
+
+In fact, the [proportion of boys born in the
+UK](https://www.gov.uk/government/statistics/gender-ratios-at-birth-in-great-britain-2010-to-2014)
+is 0.513. Hence the proportion of girls is 1-0.513 = 0.487.
+
+Here is a snippet of code that makes four random numbers and counts how many of these are less than 0.487.
+
+```{python}
+# Make four random numbers
+randoms = np.random.uniform(0, 1, 4)
+# Compare to 0.487
+less_than = randoms < 0.487
+n_less_than = np.count_nonzero(less_than)
+n_less_than
+```
+
+Let's say we want to put that into a function, called `count_4_girls`.   The
+function accepts no arguments, and returns the number of girls from a simulated
+family of four, as above:
+
+```{python}
+#<--
+def count_4_girls():
+#<-     ...
+    # Make four random numbers
+    randoms = np.random.uniform(0, 1, 4)
+    # Compare to 0.487
+    less_than = randoms < 0.487
+    return np.count_nonzero(less_than)
+
+#<-
+# Check what the function returns
+count_4_girls()
+#<-
+```
+
+```{python}
+_ = ok.grade('q_5_1_count_4_girls')
+```
+
+Now we want a more general function that accepts two arguments `n` - the number
+of children, and `p` the probability that any one child is a girl.   As before,
+it returns the number of girls from a simulated family of `n` children, each
+with `p` chance of being a girl.  Call the function `count_girls`.
+
+```{python}
+#<--
+def count_girls(n, p):
+#<-     ...
+    # Make n random numbers
+    randoms = np.random.uniform(0, 1, n)
+    # Compare to p
+    less_than = randoms < p
+    return np.count_nonzero(less_than)
+
+#<-
+# Check what the function returns for n=5, p=0.25
+print(count_girls(5, 0.25))
+# Check what the function returns for n=3, p=0.6
+print(count_girls(3, 0.6))
+#<-
+```
+
+```{python}
+_ = ok.grade('q_5_2_count_girls')
+```
+## Function world
 
 Remember that, in function world, the function can see the variables at the top
 level, but it cannot change what value the top-level variables point to.
