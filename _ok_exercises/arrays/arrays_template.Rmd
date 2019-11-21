@@ -93,7 +93,9 @@ you can assign them names or use them as arguments to functions.
 that order.  Name it `small_numbers`.
 
 ```{python}
-small_numbers = ...
+#<- small_numbers = ...
+small_numbers = np.array([1, 2, 3])
+#<--
 small_numbers
 ```
 
@@ -106,7 +108,9 @@ $e$, in that order.  Name it `interesting_numbers`.  *Hint:* the Numpy `np`
 module has the value $\pi$ as `np.pi`.  It also has the value $e$.
 
 ```{python}
-interesting_numbers = ...
+#<- interesting_numbers = ...
+interesting_numbers = np.array([0, 1, -1, np.pi, np.e])
+#<--
 interesting_numbers
 ```
 
@@ -135,7 +139,9 @@ contain 9 because `np.arange` stops *before* the stop value is reached.)
 297, etc.)
 
 ```{python}
-multiples_of_99 = ...
+#<- multiples_of_99 = ...
+multiples_of_99 = np.arange(0, 10000, 99)
+#<--
 multiples_of_99
 ```
 
@@ -173,7 +179,9 @@ isn't passing the tests, check its length and make sure it has $31 \times 24$
 elements.
 
 ```{python}
-collection_times = ...
+#<- collection_times = ...
+collection_times = np.arange(0, 31*24*60*60, 60 * 60)
+#<--
 collection_times
 ```
 
@@ -255,7 +263,9 @@ np.array([-1, -3, 4, -2]).item(3)
 getting the appropriate element from `population` using `item`.
 
 ```{python}
-population_1973 = ...
+#<- population_1973 = ...
+population_1973 = population.item(23)
+#<--
 population_1973
 ```
 
@@ -304,7 +314,9 @@ in every year.  Give the result (an array of 66 numbers) the name
 `population_magnitudes`.  Your code should be very short.
 
 ```{python}
-population_magnitudes = ...
+#<- population_magnitudes = ...
+population_magnitudes = np.log10(population)
+#<--
 population_magnitudes
 ```
 
@@ -347,7 +359,9 @@ the total charge.  Compute the total charge for each bill in
 `restaurant_bills`.
 
 ```{python}
-total_charges = ...
+#<- total_charges = ...
+total_charges = restaurant_bills * 1.2
+#<--
 total_charges
 ```
 
@@ -359,12 +373,16 @@ _ = ok.grade('q432')
 Compute the total charge for each one.  How is your code different?
 
 ```{python}
+#<-
 # Don't worry about the next two lines.  They get the data into an array.
 bills_table = pd.read_table("more_restaurant_bills.csv")
 more_restaurant_bills = bills_table["Bill"].values
 
 # Your code here.  It will use the more_restaurant_bills variable.
-more_total_charges = ...
+#<-
+#<- more_total_charges = ...
+more_total_charges = more_restaurant_bills * 1.2
+#<--
 more_total_charges
 ```
 
@@ -380,7 +398,9 @@ array).
 `more_restaurant_bills`, *including tips*?
 
 ```{python}
-sum_of_bills = ...
+#<- sum_of_bills = ...
+sum_of_bills = sum(more_total_charges)
+#<--
 sum_of_bills
 ```
 
@@ -395,7 +415,9 @@ GB.)  Use `np.arange` and the exponentiation operator `**` to compute the first
 30 powers of 2, starting from `2^0`.
 
 ```{python}
-powers_of_2 = ...
+#<- powers_of_2 = ...
+powers_of_2 = 2 ** np.arange(30)
+#<--
 powers_of_2
 ```
 
