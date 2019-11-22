@@ -1,0 +1,141 @@
+---
+jupyter:
+  jupytext:
+    metadata_filter:
+      notebook:
+        additional: all
+        excluded:
+        - language_info
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.0'
+      jupytext_version: 0.8.6
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+  textbook:
+    run: false
+---
+
+```{python}
+# Load the OKpy test library and tests.
+from client.api.notebook import Notebook
+ok = Notebook('function_vals.ok')
+```
+
+For background, please read the [functions as
+values page]({{ site.baseurl }}/chapters/07/functions_as_values).
+
+Consider these two functions:
+
+```{python}
+def add(a, b):
+    return a + b
+```
+
+```{python}
+def sub(a, b):
+    return a - b
+```
+
+Here's `add` in action:
+
+```{python}
+add(4, 1)
+```
+
+Here's `sub` in action:
+
+```{python}
+sub(4, 1)
+```
+
+There's some code below, that will error, because the assignment
+statement does not set `func_a` to have the value we need. Set `func_a`
+correctly so the result equals 7:
+
+```{python}
+#<- func_a = add()
+func_a = add
+#<-
+w = func_a(-1, 8)
+w
+#<-
+```
+
+```{python}
+_ = ok.grade('q_0_w')
+```
+
+Set `func_b` correctly in the code below so the result equals 2:
+
+```{python}
+#<- func_b = add
+func_b = sub
+#<-
+x = func_b(10, 8)
+x
+#<-
+```
+
+```{python}
+_ = ok.grade('q_1_x')
+```
+
+Set `my_func1` and `my_func2` in the code fragment below, so that the
+result is 12:
+
+```{python}
+#<- my_func1 = ...
+my_func1 = sub
+#<- my_func2 = ...
+my_func2 = add
+#<-
+y = my_func1(8, 2) + my_func2(3, 3)
+y
+#<-
+```
+
+```{python}
+_ = ok.grade('q_2_y')
+```
+
+Here is a function that takes three arguments.  The first, called `f`,
+should be set to a function value - that is, a value that is the internal
+representation of a function.  The second and third values, called `x` and `y`,
+should set to be number values.
+
+```{python}
+def do_it(f, x, y):
+    return f(x, y)
+```
+
+Set `another_func` so the result returned is 4:
+
+```{python}
+#<- another_func = ...
+another_func = add
+#<-
+z = do_it(another_func, 1, 3)
+z
+#<-
+```
+
+```{python}
+_ = ok.grade('q_3_z')
+```
+
+## Done
+
+You're finished with the assignment!  Be sure to...
+
+- **run all the tests** (the next cell has a shortcut for that),
+- **Save and Checkpoint** from the "File" menu.
+
+```{python}
+# For your convenience, you can run this cell to run all the tests at once!
+import os
+_ = [ok.grade(q[:-3]) for q in os.listdir("tests") if q.startswith('q')]
+```
