@@ -1,0 +1,413 @@
+---
+jupyter:
+  jupytext:
+    split_at_heading: true
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.1'
+      jupytext_version: 1.2.4
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# Conditionals, functions and randomization
+
+From
+<https://github.com/data-8/data8assets/tree/gh-pages/materials/su17/lab/lab05>
+with thanks.
+
+In this exercise we will go over conditionals and iteration, and introduce the concept of randomness.
+
+First, set up the tests and imports by running the cell below.
+
+```{python}
+import numpy as np
+import pandas as pd
+
+# These lines load the tests.
+from client.api.notebook import Notebook
+ok = Notebook('functions_conditionals.ok')
+```
+
+## 1. Nachos and Conditionals
+
+
+In Python, Boolean values can either be `True` or `False`. We get Boolean
+values when using comparison operators, among which are `<` (less than), `>`
+(greater than), and `==` (equal to). For a complete list, refer to [Booleans
+and Comparison]({{ site.baseurl }}/chapters/03/Comparison).
+
+Run the cell below to see an example of a comparison operator in action.
+
+```{python}
+3 > 1 + 1
+```
+
+We can even assign the result of a comparison operation to a variable.
+
+```{python}
+result = 10 / 2 == 5
+result
+```
+
+Arrays are compatible with comparison operators. The output is an array of boolean values.
+
+```{python}
+np.array([1, 5, 7, 8, 3, -1]) > 3
+```
+
+Waiting on the dining table just for you is a hot bowl of nachos! Let's say
+that whenever you take a nacho, it will have cheese, salsa, both, or neither
+(just a plain tortilla chip).
+
+Using the function call `np.random.choice(array_name)`, let's simulate taking
+nachos from the bowl at random. Start by running the cell below several times,
+and observe how the results change.
+
+```{python}
+nachos = np.array(['cheese', 'salsa', 'both', 'neither'])
+np.random.choice(nachos)
+```
+
+**Question 1.** Assume we took ten nachos at random, and stored the results in
+an array called `ten_nachos`. Find the number of nachos with only cheese using
+code (do not hardcode the answer).
+
+*Hint:* Our solution involves a comparison operator and the `np.count_nonzero`
+method.
+
+```{python}
+#<-
+ten_nachos = np.array(['neither', 'cheese', 'both', 'both', 'cheese', 'salsa',
+                       'both', 'neither', 'cheese', 'both'])
+#<-
+#<- number_cheese = ...
+number_cheese = np.count_nonzero(ten_nachos == 'cheese')
+#<--
+number_cheese
+```
+
+```{python}
+_ = ok.grade('q1_1')
+```
+
+**Conditional Statements**
+
+A conditional statement is made up of many lines that allow Python to choose
+from different alternatives based on whether some condition is true.
+
+Here is a basic example.
+
+```{python}
+def sign(x):
+    if x > 0:
+        return 'Positive'
+```
+
+How the function works is if the input `x` is greater than `0`, we get the
+string `'Positive'` back.
+
+If we want to test multiple conditions at once, we use the following general
+format.
+
+```
+if <if expression>:
+    <if body>
+elif <elif expression 0>:
+    <elif body 0>
+elif <elif expression 1>:
+    <elif body 1>
+...
+else:
+    <else body>
+```
+
+Only one of the bodies will ever be executed. Each `if` and `elif` expression
+is evaluated and considered in order, starting at the top. As soon as a true
+value is found, the corresponding body is executed, and the rest of the
+expression is skipped. If none of the `if` or `elif` expressions are true, then
+the `else body` is executed. For more examples and explanation, refer to
+[conditionals]({{ site.baseurl }}/chapters/07/conditional_statements).
+
+
+**Question 2.** Complete the following conditional statement so that the string `'More please'` is assigned to `say_please` if the number of nachos with cheese in `ten_nachos` is less than `5`.
+
+```{python}
+#<-
+say_please = '?'
+
+#<-
+#<- if ...
+if np.count_nonzero(ten_nachos == 'cheese') < 5:
+#<--
+    say_please = 'More please'
+#<-
+
+say_please
+#<-
+```
+
+```{python}
+_ = ok.grade('q1_2')
+```
+
+**Question 3.** Write a function called `nacho_reaction` that returns a string based on the type of nacho passed in. From top to bottom, the conditions should correspond to: `'cheese'`, `'salsa'`, `'both'`, `'neither'`.
+
+```{python}
+def nacho_reaction(nacho):
+    #<- if ...:
+    if nacho == 'cheese':
+    #<--
+        return 'Cheesy!'
+    #- next condition should return 'Spicy!'
+    #<- ...
+    if nacho == 'salsa':
+        return 'Spicy!'
+    #- next condition should return 'Wow!'
+    #<- ...
+    if nacho == 'both':
+        return 'Wow!'
+    #- next condition should return 'Meh.'
+    #<- ...
+    if nacho == 'neither':
+        return 'Meh.'
+#<-
+
+spicy_nacho = nacho_reaction('salsa')
+spicy_nacho
+#<-
+```
+
+```{python}
+_ = ok.grade('q1_3')
+```
+
+**Question 4.** Add a column `'Reactions'` to the table `ten_nachos_reactions`
+that consists of reactions for each of the nachos in `ten_nachos`. 
+
+*Hint:* Use the `apply` method.
+
+```{python}
+#<-
+ten_nachos_reactions = pd.DataFrame()
+ten_nachos_reactions['Nachos'] = ten_nachos
+#<-
+#<- ...
+ten_nachos_reactions['Reactions'] = ten_nachos_reactions['Nachos'].apply(nacho_reaction)
+#<--
+ten_nachos_reactions
+```
+
+```{python}
+_ = ok.grade('q1_4')
+```
+
+**Question 5.** Using code, find the number of `'Wow!'` reactions for the nachos in `ten_nachos_reactions`.
+
+```{python}
+#<- number_wow_reactions = ...
+number_wow_reactions = np.count_nonzero(ten_nachos_reactions['Reactions'] == 'Wow!')
+number_wow_reactions
+```
+
+```{python}
+_ = ok.grade('q1_5')
+```
+
+**Question 7.** Complete the function `both_or_neither`, which takes in a table
+of nachos with reactions (just like the one from Question 4) and returns
+`'Wow!'` if there are more nachos with both cheese and salsa, or `'Meh.'` if
+there are more nachos with neither. If there are an equal number of each,
+return `'Okay!'`.
+
+```{python}
+#<--
+def both_or_neither(nacho_table):
+    #<- reactions = ...
+    reactions = nacho_table['Reactions']
+    #<- number_wow_reactions = ...
+    number_wow_reactions = np.count_nonzero(reactions == 'Wow!')
+    #<- number_meh_reactions = ...
+    number_meh_reactions = np.count_nonzero(reactions == 'Meh.')
+    #<- if ...:
+    if number_wow_reactions > number_meh_reactions:
+    #<--
+        return 'Wow!'
+    #- next condition should return 'Meh.'
+    #<- ...
+    if number_wow_reactions < number_meh_reactions:
+        return 'Meh.'
+    #- next condition should return 'Okay!'
+    #<- ...
+    if number_wow_reactions == number_meh_reactions:
+        return 'Okay!'
+
+#<-
+many_nachos = pd.DataFrame()
+many_nachos['Nachos'] = np.random.choice(nachos, 250)
+many_nachos['Reactions'] = many_nachos['Nachos'].apply(nacho_reaction)
+nacho_result = both_or_neither(many_nachos)
+nacho_result
+#<-
+```
+
+```{python}
+_ = ok.grade('q1_7')
+```
+
+## 2. Iteration
+
+Using a `for` statement, we can perform a task multiple times. This is known as
+iteration. Here, we'll simulate drawing different suits from a deck of cards.
+
+```{python}
+suits = np.array(["♤", "♡", "♢", "♧"])
+
+draws = np.array([])
+
+repetitions = 6
+
+for i in np.arange(repetitions):
+    draws = np.append(draws, np.random.choice(suits))
+
+draws
+```
+
+In the example above, the `for` loop appends a random draw to the `draws` array
+for every number in `np.arange(repetitions)`. Another use of iteration is to
+loop through a set of values. For instance, we can print out all of the colors
+of the rainbow.
+
+```{python}
+rainbow = np.array(["red", "orange", "yellow", "green", "blue", "indigo", "violet"])
+
+for color in rainbow:
+    print(color)
+```
+
+We can see that the indented part of the `for` loop, known as the body, is
+executed once for each item in `rainbow`. Note that the name `color` is
+arbitrary; we could easily have named it something else.
+
+
+**Question 1.** Clay is playing darts. His dartboard contains ten equal-sized
+zones with point values from 1 to 10. Write code that simulates his total score
+after 1000 dart tosses. Make sure to use a `for` loop.
+
+```{python}
+#<- possible_point_values = ...
+possible_point_values = np.arange(1, 11)
+#<--
+tosses = 1000
+#<- total_score = ...
+total_score = 0
+#<- for ...
+#<-     ...
+for i in np.arange(tosses):
+    result = np.random.choice(possible_point_values)
+    total_score = total_score + result
+#<--
+total_score
+```
+
+```{python}
+_ = ok.grade('q2_1')
+```
+
+**Question 2.** What is the average point value of a dart thrown by Clay?
+
+```{python}
+#<- average_score = ...
+average_score = total_score / 1000
+#<--
+average_score
+```
+
+```{python}
+_ = ok.grade('q2_2')
+```
+
+**Question 3.** In the following cell, we've loaded the text of _Pride and
+Prejudice_ by Jane Austen, split it into individual words, and stored these
+words in an array. Using a `for` loop, assign `longer_than_five` to the number
+of words in the novel that are more than 5 letters long.
+
+*Hint*: You can find the number of letters in a word with the `len` function.
+
+```{python}
+#<-
+# Load the text of Pride and Prejudice.
+austen_string = open('Austen_PrideAndPrejudice.txt', encoding='utf-8').read()
+# Make array containing words.
+p_and_p_words = np.array(austen_string.split())
+#<-
+#<- longer_than_five = ...
+longer_than_five = 0
+for word in p_and_p_words:
+    if len(word) > 5:
+        longer_than_five = longer_than_five + 1
+#<--
+longer_than_five
+```
+
+```{python}
+_ = ok.grade('q2_3')
+```
+
+**Question 4.** Using simulation with 10,000 trials, assign
+`chance_of_all_different` to an estimate of the chance that if you pick three
+words from Pride and Prejudice uniformly at random (with replacement), they all
+have different lengths.
+
+*Hint 1*: Investigate the help for `np.random.choice`.
+
+*Hint 2*: Remember that `!=` only checks for non-equality between two items, not
+three. However, you can use `!=` more than once in the same line, combined with
+`and`.
+
+For example, `(2 != 3) and (3 != 4)` first checks for non-equality between `2`
+and `3`, then `3` and `4`. It does *not* check non-equality between `2` and `4`.
+
+```{python}
+#<--
+trials = 10000
+#<- different = ...
+#<--
+different = np.zeros(trials)
+
+#<- for ... in ...:
+#<-     ...
+for i in np.arange(trials):
+    words = np.random.choice(p_and_p_words, 3)
+    L0 = len(words[0])
+    L1 = len(words[1])
+    L2 = len(words[2])
+    if L0 != L1 and L0 != L2 and L1 != L2:
+        different[i] = 1
+#<--
+
+#<- chance_of_all_different = ...
+chance_of_all_different = sum(different) / trials
+#<--
+chance_of_all_different
+```
+
+```{python}
+_ = ok.grade('q2_4')
+```
+
+## Done
+
+You're finished with the assignment!  Be sure to...
+
+- **run all the tests** (the next cell has a shortcut for that),
+- **Save and Checkpoint** from the "File" menu.
+
+```{python}
+# For your convenience, you can run this cell to run all the tests at once!
+import os
+_ = [ok.grade(q[:-3]) for q in sorted(os.listdir("tests")) if q.startswith('q')]
+```
