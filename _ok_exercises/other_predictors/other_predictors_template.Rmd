@@ -101,7 +101,7 @@ predictor was 5.  Then the sum of squared prediction errors is `(3 - 5) **
 ```{python}
 #<- def mean_sq_err(seq, p):
 #<-     # Your code here
-#<-
+#<-     ...
 def mean_sq_err(seq, p):
     pred_errs = seq - p
     sq_pred_errs = pred_errs ** 2
@@ -157,7 +157,7 @@ into the variable `best_vs_mean`:
 ```{python}
 #<- best_vs_mean = ...
 best_vs_mean = np.min(mse_for_predictors) - mean_sq_err(wbc, wbc.mean())
-#<-
+#<--
 best_vs_mean
 ```
 
@@ -172,7 +172,7 @@ Calculate the median of `wbc`, calculate the mean squared error for `wbc` using 
 mse_for_median = mean_sq_err(wbc, wbc.median())
 #<- median_vs_mean = ...
 median_vs_mean = mse_for_median - mean_sq_err(wbc, wbc.mean())
-#<-
+#<--
 median_vs_mean
 ```
 
