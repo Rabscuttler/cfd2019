@@ -1,0 +1,194 @@
+---
+jupyter:
+  jupytext:
+    split_at_heading: true
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.1'
+      jupytext_version: 1.2.4
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# Other predictors
+
+This exercise is a chance to practice working with predictors.
+
+First, set up the tests and imports by running the cell below.
+
+```{python}
+# Run this cell.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+# %matplotlib inline
+plt.style.use('fivethirtyeight')
+
+# These lines load the tests.
+from client.api.notebook import Notebook
+ok = Notebook('other_predictors.ok')
+```
+
+We were studying prediction errors [the meaning of the mean]({{ site.baseurl }}/chapters/08/mean_meaning) notebook.
+
+In that notebook, you see the assertions that, *for any sequence of numbers*:
+
+* The mean gives the lowest sum of prediction errors (and therefore, mean
+  prediction error);
+* The mean gives the lowest sum of squared prediction error (and therefore mean
+  squared prediction error).
+
+As you remember, if you have a value $c$ that is a *predictor*, then you get the prediction error for every element in your sequence, by subtracting $c$ from that element.
+
+To be more specific, lets look at some [data on chronic kidney disease]({{ site.baseurl }}/data/chronic_kidney_disease).
+
+This is a data table with one row per patient and one column per test on that patient.  Many of columns are values from blood tests.  Most of the patients have chronic kidney disease.
+
+```{python}
+# Run this cell
+ckd = pd.read_csv('ckd_clean.csv')
+ckd.head()
+```
+
+We are interested in the column 'White Blood Cell Count'.
+
+Make a new variable `wbc` that is a Series containing the "White Blood Cell Count" data.  Do a histogram of these values:
+
+```{python}
+#<- wbc = ...
+wbc = ckd['White Blood Cell Count']
+wbc.hist()
+#<--
+wbc.head()
+```
+
+```{python}
+_ = ok.grade('q_1_wbc')
+```
+
+Could these values plausibly have been drawn from a normal distribution?
+
+Assign either 1, 2, or 3 to the name `wbc_likely_normal` below.
+
+1. Yes, that's plausible.
+2. There isn't enough evidence to be confident either way.
+3. No, that's not plausible.
+
+```{python}
+#<- wbc_likely_normal = ...
+wbc_likely_normal = 3
+```
+
+```{python}
+_ = ok.grade('q_2_wbc_likely_normal')
+```
+
+Make a function called `mean_sq_err` that accepts two inputs:
+
+1. a sequence of numbers
+1. a predictor (a single number)
+
+It returns the mean of the squared prediction errors.
+
+For example, say the sequence of numbers was `np.array([3, 4])`, and your
+predictor was 5.  Then the sum of squared prediction errors is `(3 - 5) **
+2 + (4 - 5) ** 2` = `5`, and the mean of the squared prediction errors is `5 / 2` = 2.5.
+
+
+```{python}
+#<- def mean_sq_err(seq, p):
+#<-     # Your code here
+#<-
+def mean_sq_err(seq, p):
+    pred_errs = seq - p
+    sq_pred_errs = pred_errs ** 2
+    return np.mean(sq_pred_errs)
+```
+
+Simple test with the following:
+
+```{python}
+print(mean_sq_err(np.array([3, 4]), 5))  # Should show 2.5
+print(mean_sq_err(np.array([3, 5]), 4))  # Should show 1
+print(mean_sq_err(np.array([2, 3, 5]), 4))  # Should show 2
+```
+
+```{python}
+_ = ok.grade('q_6_mse_func')
+```
+
+Use this function to calculate the mean squared error of `wbc` for candidate
+predictors from 8000, up to, but not including 9000, in steps of 0.1.  Your
+predictors should include 8000, 8000.1, 8000.2 ... 8999.9, and you should
+calculate a mean squared error for `wbc`, for each predictor.
+
+```{python}
+#<- predictors = ...
+predictors = np.arange(8000, 9000, 0.1)
+#<- mse_for_predictors = ...
+n_predictors = len(predictors)
+mse_for_predictors = np.zeros(n_predictors)
+for i in np.arange(n_predictors):
+    mse_for_predictors[i] = mean_sq_err(wbc, predictors[i])
+#<-
+# Show the first five mean squared error.
+mse_for_predictors[:5]
+#<-
+```
+
+```{python}
+_ = ok.grade('q_7_mse_for_predictors')
+```
+
+Plot the `predictors` on the x axis against `mse_for_predictors` on the y axis.
+
+```{python}
+#- Plot mse_for_predictors against predictors
+plt.plot(predictors, mse_for_predictors)
+```
+
+Now calculate the mean squared error for `wbc` using the mean as a predictor.
+Subtract this value from the minimum of `mse_for_predictors` and put the result
+into the variable `best_vs_mean`:
+
+```{python}
+#<- best_vs_mean = ...
+best_vs_mean = np.min(mse_for_predictors) - mean_sq_err(wbc, wbc.mean())
+#<-
+best_vs_mean
+```
+
+```{python}
+_ = ok.grade('q_8_best_vs_mean')
+```
+
+Calculate the median of `wbc`, calculate the mean squared error for `wbc` using the median as predictor, and subtract the mean squared error using the mean as predictor, putting the result into `median_vs_mean`
+
+```{python}
+#<- mse_for_median = ...
+mse_for_median = mean_sq_err(wbc, wbc.median())
+#<- median_vs_mean = ...
+median_vs_mean = mse_for_median - mean_sq_err(wbc, wbc.mean())
+#<-
+median_vs_mean
+```
+
+```{python}
+_ = ok.grade('q_9_median_vs_mean')
+```
+
+## Done
+
+You're finished with the assignment!  Be sure to...
+
+- **run all the tests** (the next cell has a shortcut for that),
+- **Save and Checkpoint** from the "File" menu.
+
+```{python}
+# For your convenience, you can run this cell to run all the tests at once!
+import os
+_ = [ok.grade(q[:-3]) for q in sorted(os.listdir("tests")) if q.startswith('q')]
+```
