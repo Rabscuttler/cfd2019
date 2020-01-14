@@ -86,6 +86,8 @@ wbc_likely_normal = 3
 _ = ok.grade('q_2_wbc_likely_normal')
 ```
 
+## Mean square error
+
 Make a function called `mean_sq_err` that accepts two inputs:
 
 1. a sequence of numbers
@@ -121,20 +123,20 @@ _ = ok.grade('q_6_mse_func')
 ```
 
 Use this function to calculate the mean squared error of `wbc` for candidate
-predictors from 8000, up to, but not including 9000, in steps of 0.1.  Your
-predictors should include 8000, 8000.1, 8000.2 ... 8999.9, and you should
+predictors from 7000, up to, but not including 10000, in steps of 0.5.  Your
+predictors should include 7000, 7000.5, 7001.0 ... 9999.5, and you should
 calculate a mean squared error for `wbc`, for each predictor.
 
 ```{python}
 #<- predictors = ...
-predictors = np.arange(8000, 9000, 0.1)
+predictors = np.arange(7000, 10000, 0.5)
 #<- mse_for_predictors = ...
 n_predictors = len(predictors)
 mse_for_predictors = np.zeros(n_predictors)
 for i in np.arange(n_predictors):
     mse_for_predictors[i] = mean_sq_err(wbc, predictors[i])
 #<-
-# Show the first five mean squared error.
+# Show the first five mean squared error values.
 mse_for_predictors[:5]
 #<-
 ```
@@ -179,6 +181,106 @@ median_vs_mean
 ```{python}
 _ = ok.grade('q_9_median_vs_mean')
 ```
+
+## Mean absolute error
+
+You have dealt with one measure of a predictor - the mean square prediction
+error.
+
+Another measure of a predictor is its ability to reduce the *absolute* error.
+
+For example, say we have a sequence `3, 4`, and a predictor `5`.  The absolute
+errors are `abs(3 - 5), abs(4 - 5)`, and the mean absolute error is then
+(2 + 1) / 2 = 1.5.
+
+Before you continue, take some time to think whether you think the mean or the median will do a better job here.  Write down your answer *on the piece of paper you already had next to you on the desk*!
+
+Write a function `mean_abs_err` to do this prediction for a sequence `seq` and
+a predictor `p`.
+
+*Hint*: there is a Numpy function to return the absolute values in an array.
+
+```{python}
+#<- def mean_abs_err(seq, p):
+#<-     # Your code here
+#<-     ...
+def mean_abs_err(seq, p):
+    abs_pred_errs = np.abs(seq - p)
+    return np.mean(abs_pred_errs)
+```
+
+Simple test with the following:
+
+```{python}
+print(mean_abs_err(np.array([3, 4]), 5))  # Should show 1.5
+print(mean_abs_err(np.array([3, 5]), 4))  # Should show 1
+print(mean_abs_err(np.array([2, 3, 5]), 4))  # Should show 1.333 ish
+```
+
+```{python}
+_ = ok.grade('q_10_mae_func')
+```
+
+Use this function to calculate the mean absolute error of `wbc` for the candidate
+predictors you used before, from 7000 to 10000, in steps of 0.5.  You should
+calculate a mean absolute error for `wbc`, for each predictor.
+
+```{python}
+#<- mae_for_predictors = ...
+n_predictors = len(predictors)
+mae_for_predictors = np.zeros(n_predictors)
+for i in np.arange(n_predictors):
+    mae_for_predictors[i] = mean_abs_err(wbc, predictors[i])
+#<-
+# Show the first five mean absolute error values.
+mae_for_predictors[:5]
+#<-
+```
+
+```{python}
+_ = ok.grade('q_11_mae_for_predictors')
+```
+
+Plot the `predictors` on the x axis against `mae_for_predictors` on the y axis.
+
+```{python}
+#- Plot mae_for_predictors against predictors
+plt.plot(predictors, mae_for_predictors)
+```
+
+Now calculate the mean absolute error for `wbc` using the mean as a predictor.
+Subtract this value from the minimum of `mae_for_predictors` and put the result
+into the variable `a_best_vs_mean`.
+
+```{python}
+#<- a_best_vs_mean = ...
+a_best_vs_mean = np.min(mae_for_predictors) - mean_abs_err(wbc, wbc.mean())
+#<--
+a_best_vs_mean
+```
+
+```{python}
+_ = ok.grade('q_12_a_best_vs_mean')
+```
+
+Calculate the median of `wbc`, calculate the mean absolute error for `wbc` using
+the median as predictor, and subtract the mean absolute error using the mean as
+predictor, putting the result into `a_median_vs_mean`
+
+```{python}
+#<- mae_for_median = ...
+mae_for_median = mean_abs_err(wbc, wbc.median())
+#<- a_median_vs_mean = ...
+a_median_vs_mean = mae_for_median - mean_abs_err(wbc, wbc.mean())
+#<--
+a_median_vs_mean
+```
+
+```{python}
+_ = ok.grade('q_13_a_median_vs_mean')
+```
+
+Were you right in your speculation as to which of the median or mean would be a better predictor of the absolute value?
 
 ## Done
 

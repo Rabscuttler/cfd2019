@@ -1,13 +1,13 @@
 test = {
-  'name': 'Question 8_best_vs_mean',
+  'name': 'Question 9_a_median_vs_mean',
   'points': 1,
   'suites': [
     {
       'cases': [
         {
           'code': r"""
-          >>> # You need to set the value for 'best_vs_mean'
-          >>> 'best_vs_mean' in vars()
+          >>> # You need to set the value for 'a_median_vs_mean'
+          >>> 'a_median_vs_mean' in vars()
           True
           """,
           'hidden': False,
@@ -15,9 +15,9 @@ test = {
         },
         {
           'code': r"""
-          >>> # You haven't changed the value for 'best_vs_mean'
+          >>> # You haven't changed the value for 'a_median_vs_mean'
           >>> # from its initial state (of ...)
-          >>> best_vs_mean is not ...
+          >>> a_median_vs_mean is not ...
           True
           """,
           'hidden': False,
@@ -25,7 +25,7 @@ test = {
         },
         {
           'code': r"""
-          >>> np.isclose(best_vs_mean, 0.0025637)
+          >>> np.isclose(a_median_vs_mean, -70.4214)
           True
           """,
           'hidden': False,

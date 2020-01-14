@@ -1,13 +1,13 @@
 test = {
-  'name': 'Question 8_best_vs_mean',
+  'name': 'Question q_10_mae_func',
   'points': 1,
   'suites': [
     {
       'cases': [
         {
           'code': r"""
-          >>> # You need to set the value for 'best_vs_mean'
-          >>> 'best_vs_mean' in vars()
+          >>> # Did you remember to return a value from your function?
+          >>> mean_abs_err(np.array([3, 5]), 5) is not None
           True
           """,
           'hidden': False,
@@ -15,9 +15,11 @@ test = {
         },
         {
           'code': r"""
-          >>> # You haven't changed the value for 'best_vs_mean'
-          >>> # from its initial state (of ...)
-          >>> best_vs_mean is not ...
+          >>> mean_abs_err(np.array([3, 4]), 5) == 1.5
+          True
+          >>> mean_abs_err(np.array([3, 5]), 4) == 1
+          True
+          >>> np.isclose(mean_abs_err(np.array([2, 3, 5]), 4), 4/3)
           True
           """,
           'hidden': False,
@@ -25,7 +27,9 @@ test = {
         },
         {
           'code': r"""
-          >>> np.isclose(best_vs_mean, 0.0025637)
+          >>> my_wbc = ckd['White Blood Cell Count']
+          >>> np.isclose(mean_abs_err(my_wbc, 10000),
+          ...                        np.abs(my_wbc - 10000).mean())
           True
           """,
           'hidden': False,
