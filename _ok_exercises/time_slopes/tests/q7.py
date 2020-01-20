@@ -7,16 +7,11 @@ test = {
         {
           'code': r"""
           >>> # Testing the slope
-          >>> abs(fit_line(example_table)[0] - 2) < .5
+          >>> np.isclose(sos_errors(16000), 62709.57)
           True
-          >>> # Testing the intercept
-          >>> abs(fit_line(example_table)[1] - 1) < .5
+          >>> np.isclose(sos_errors(15000), 24790.27)
           True
-          >>> # Testing the slope
-          >>> abs(fit_line(close_novas)[0] - 14094) < 5 
-          True
-          >>> # Testing the intercept
-          >>> abs(fit_line(close_novas)[1] - 2) < .5
+          >>> np.isclose(sos_errors(14000), 18852.35)
           True
           """,
           'hidden': False,

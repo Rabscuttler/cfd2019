@@ -110,7 +110,7 @@ def scatter_after_time(t, start_of_time, end_of_time, x, y, center_name,
     plt.xlim(-max_location, max_location)
     plt.ylim(-max_location, max_location)
     plt.gca().set_aspect('equal', adjustable='box')
-    plt.gca().set_position(make_array(0, 0, 1, 1))
+    plt.gca().set_position([0, 0, 1, 1])
     plt.legend(bbox_to_anchor=(1.6, .7))
     plt.title(make_title(t))
     plt.show()
@@ -285,6 +285,7 @@ Looking this plot, make a guess at the age of the universe.
 parsec is, it's a big unit of distance, equivalent to 30.86 trillion
 kilometers.
 
+
 ```{python}
 #- Fill this in manually by examining the line above.
 #<- first_guess_universe_age_years = ...
@@ -312,6 +313,9 @@ eye.  Recall that the least-squares regression line for our supernova data is:
 $$\text{the supernova's actual distance from Earth} - \text{the height of the
 line at that supernova's speed.}$$
 
+We will assume the line goes through the origin, meaning that the intercept of
+the line is 0.  This corresponds to the assumption that a speed of 0 means 0
+distance.
 
 ### Question 5
 
@@ -320,11 +324,10 @@ Define a function called `errors`.  It should take three arguments:
 1.  a table like `close_novas` (with the same column names and meanings, but
     not necessarily the same data)
 2.  the slope of a line (a number)
-3.  the intercept of a line (a number).
 
-It should return an array of the errors made when a line with that slope and
-intercept is used to predict distance from speed for each supernova in the
-given table.  (The error is the actual distance minus the predicted distance.)
+It should return an array of the errors made when a line with that slope is
+used to predict distance from speed for each supernova in the given table.
+(The error is the actual distance minus the predicted distance.)
 
 ```{python for_assignment_type=student}
 #<--
@@ -337,9 +340,9 @@ def errors(tbl, slope):
 
 ### Question 6
 
-Using `errors`, compute the errors for the line with slope `16000` and
-intercept `0` on the `close_novas` dataset.  Name that array `example_errors`.
-Then make a scatter plot of the errors.
+Using `errors`, compute the errors for the line with slope `16000` on the
+`close_novas` dataset.  Name that array `example_errors`. Then make a scatter
+plot of the errors.
 
 **Hint:** To make a scatter plot of the errors, plot the error for each
 supernova in the dataset.  Put the actual speed on the horizontal axis and the
@@ -349,6 +352,7 @@ error on the vertical axis.
 #<- example_errors = ...
 #<- ...
 example_errors = errors(close_novas, 16000)
+plt.plot(close_novas["Distance (million parsecs)"], example_errors, 'o')
 ```
 
 ```{python}
@@ -358,38 +362,28 @@ _ = ok.grade('q6')
 You should find that the errors are almost all negative.  That means our line
 is a little bit too steep.  Let's find a better one.
 
-
 ### Question 7
 
-Define a function called `fit_line`.  It should take a table like `close_novas`
-(with the same column names and meanings) as its argument.  It should return an
-array containing the slope (as item 0) and intercept (as item 1) of the
-least-squares regression line predicting distance from speed for that table.
+We want to use `errors` to find the slope of the line that minimizes the
+squares of the errors.
 
-Note: If you haven't tried to use the `minimize` function yet, now is a great
-time to practice. Here's an [example from the textbook]({{ site.baseurl
-}}/chapters/08/mean_and_slopes).
+Define a new function called `sos_errors`.  It should take one argument; the
+slope of a line (a number).
 
-```{python}
-from scipy.optimize import minimize
+It should return the sum of squared errors made when a line with that slope is
+used to predict distance from speed for each supernova in `close_novas`.
+
+```{python for_assignment_type=student}
 #<--
-def fit_line(tbl):
-    #- Your code may need more than 1 line below here.
-#<-    def mse(..., ...):
-#<-        ...
-#<-    return ...
-    def mse(slope):
-        return np.mean(errors(tbl, slope) ** 2)
+def sos_errors(slope):
+#<-     ...
+#<-     return ...
+    return np.sum(errors(close_novas, slope) ** 2)
+#<-
 
-    return minimize(mse, 16000).x[0]
-
-
-# Here is an example call to your function.  To test your function,
-# figure out the right slope and intercept by hand.
-example_table = pd.DataFrame()
-example_table["Speed (parsecs/year)"] = np.array([0, 1])
-example_table["Distance (million parsecs)"] = np.array([0, 3])
-fit_line(example_table)
+# Test run of your function.
+sos_errors(16000)
+#<-
 ```
 
 ```{python}
@@ -398,11 +392,18 @@ _ = ok.grade('q7')
 
 ### Question 8
 
-Use your function to fit a line to `close_novas`.
+Use your `sos_errors` function to calculate the estimated slope of the
+least-squares regression line predicting distance from speed for the table
+`close_novas`.
 
-Then, set `new_errors` equal to the errors that we get calling `errors` with
-our new line. The following line will graph the corresponding residual plot
-with a best fit line.
+**Note**: If you haven't tried to use the `minimize` function yet, now is a
+great time to practice. Here's an [example from the textbook]({{ site.baseurl
+}}/chapters/08/mean_and_slopes).  Or you can use the brute-force try-everything
+approach in the same page.
+
+When you have calculated the slope, set `new_errors` equal to the errors that
+we get calling `errors` with our new line. The following line will graph the
+corresponding residual plot with a best fit line.
 
 Make sure that the residual plot makes sense.
 
@@ -410,28 +411,32 @@ Make sure that the residual plot makes sense.
 
 ```{python}
 #<- best_line_slope = ...
-#<- best_line_intercept = ...
 #<- 
 #<- new_errors = ...
-best_fit_slope = fit_line(close_novas)
+from scipy.optimize import minimize
+best_fit_slope = minimize(sos_errors, 16000).x
 new_errors = errors(close_novas, best_fit_slope)
 
-# This code displays the residual plot, given your values for the
-# best_line_slope and best_line_intercept
+#<-
+
+# This code displays the residual plot, given your value for the
+# best_line_slope.
 error_df = pd.DataFrame()
 error_df["Speed (parsecs/year)"] = close_novas['Speed (parsecs/year)'].copy()
 error_df["Distance errors (million parsecs)"] = new_errors
 error_df.plot.scatter(0, 1)
 
 # This just shows your answer as a nice string, in billions of years.
-f"Slope: {best_fit_slope:g} (corresponding to an estimated age of {best_fit_slope/1000:.4f} billion years)"
+bf_slope = float(best_fit_slope)  # Make sure slope is a simple number.
+f"Slope: {bf_slope:g} (corresponding to an estimated age of {bf_slope/1000:.4f} billion years)"
+#<-
+```
+
+```{python}
+_ = ok.grade('q8')
 ```
 
 That slope (multiplied by 1 million) is an estimate of the age of the universe.
-The current best estimate of the age of the universe (using slightly more
-sophisticated techniques) is 13.799 billion years.  Did we get close?
-
-
 Nice work, data astronomer! You can compare your result to the [Planck project
 2015 results](https://arxiv.org/pdf/1502.01589.pdf), which estimated the age of
 the universe to be 13.799±0.021 billion years.
