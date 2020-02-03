@@ -1,0 +1,121 @@
+---
+jupyter:
+  jupytext:
+    split_at_heading: true
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.1'
+      jupytext_version: 1.2.4
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# I, slope
+
+This exercise gives you some hands-on practice with linear regression.
+
+```{python}
+# Run this cell, but please don't change it.
+
+# These lines import the Numpy and Pandas modules.
+import numpy as np
+import pandas as pd
+from scipy.optimize import minimize
+
+# These lines do some fancy plotting magic.
+import matplotlib
+# %matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use('fivethirtyeight')
+
+# These lines load the tests.
+from client.api.notebook import Notebook
+ok = Notebook('isloping.ok')
+```
+
+## Hemoglobin and serum creatinine
+
+We start by loading the [data on chronic kidney disease]({{ site.baseurl
+}}/data/chronic_kidney_disease).
+
+```{python}
+ckd = pd.read_csv('ckd_clean.csv')
+ckd.head()
+```
+
+Our interest here is in two variables / columns:
+
+* "Hemoglobin" : the concentration of the protein in red blood cells.  This
+  tends to go down in chronic kidney disease.
+* "Serum creatinine" : this is a measure of how well the kidney is clearing
+  waste products from the blood.  If your kidneys are working well, your
+  creatinine should be low.
+
+```{python}
+ckd.plot.scatter('Hemoglobin', 'Serum Creatinine')
+hgb = np.array(ckd['Hemoglobin'])
+creat = np.array(ckd['Serum Creatinine'])
+```
+
+Now your job is to find the best (least-squares) line fitting `hgb` (on the x axis) to `creat` (on the y axis).
+
+To help you, here is the `ss_any_line` function from [using minimize]({{
+site.baseurl }}/chapters/08/using_minimize).
+
+```{python}
+def ss_any_line(c_s, x_values, y_values):
+    c, s = c_s
+    predicted = c + x_values * s
+    error = y_values - predicted
+    return np.sum(error ** 2)
+```
+
+Use this function to calculate the sum of squares error for a line with
+intercept 25 and slope -1.
+
+```{python}
+#<- ss_guessed = ...
+ss_guessed = ss_any_line([25, -1], hgb, creat)
+#<->
+ss_guessed
+```
+
+```{python}
+_ = ok.grade('q_1_guessed_line')
+```
+
+Now use `minimize` to calculate the best fit intercept and slope:
+
+```{python}
+#<- best_inter, best_slope = ...
+best_inter, best_slope = minimize(ss_any_line, [25, -1], args=(hgb, creat)).x
+#<->
+print(best_inter)
+print(best_slope)
+```
+
+```{python}
+_ = ok.grade('q_2_best_line')
+```
+
+## Done
+
+You're finished with the assignment!  Be sure to...
+
+- **run all the tests** (the next cell has a shortcut for that),
+- **Save and Checkpoint** from the "File" menu.
+- Finally, **restart** the kernel for this notebook, and **run all the cells**,
+  to check that the notebook still works without errors.  Use the
+  "Kernel" menu, and choose "Restart and run all".  If you find any
+  problems, go back and fix them, save the notebook, and restart / run
+  all again, before submitting.  When you do this, you make sure that
+  we, your humble markers, will be able to mark your notebook.
+
+```{python}
+# For your convenience, you can run this cell to run all the tests at once!
+import os
+_ = [ok.grade(q[:-3]) for q in os.listdir("tests") if q.startswith('q')]
+```
