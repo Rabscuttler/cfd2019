@@ -1,0 +1,284 @@
+---
+jupyter:
+  jupytext:
+    split_at_heading: true
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.1'
+      jupytext_version: 1.2.4
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# Is, slope, real
+
+This exercise follows on from the [I, slope exercise]({{ site.baseurl }}/exercises/isloping.zip).
+
+```{python}
+# Run this cell, but please don't change it.
+
+# These lines import the Numpy and Pandas modules.
+import numpy as np
+import pandas as pd
+from scipy.optimize import minimize
+
+# These lines do some fancy plotting magic.
+import matplotlib
+# %matplotlib inline
+import matplotlib.pyplot as plt
+plt.style.use('fivethirtyeight')
+
+# These lines load the tests.
+from client.api.notebook import Notebook
+ok = Notebook('is_slope_real.ok')
+```
+
+## Hemoglobin and serum creatinine, again
+
+Again, we load the [data on chronic kidney disease]({{ site.baseurl
+}}/data/chronic_kidney_disease).
+
+```{python}
+ckd = pd.read_csv('ckd_clean.csv')
+ckd.head()
+```
+
+Again, our interest here is in these two variables / columns:
+
+* "Hemoglobin" : the concentration of the protein in red blood cells.  This
+  tends to go down in chronic kidney disease.
+* "Serum creatinine" : this is a measure of how well the kidney is clearing
+  waste products from the blood.  If your kidneys are working well, your
+  creatinine should be low.
+
+```{python}
+ckd.plot.scatter('Hemoglobin', 'Serum Creatinine')
+```
+
+In the [I, slope exercise]({{ site.baseurl }}/exercises/isloping.zip), you
+found the best-fit slope to these data, in least-squares sense.
+
+Looking at the plot, it seems as if there are two different things going on.
+
+* To the left of the plot, there are scattered values for low hemoglobin and
+  high creatinine, where it looks as if there is a weak straight line
+  relationship between them.
+* To the bottom right of the plot, there seems to be a tight cluster of values
+  with high hemoglobin and creatinine, which it is difficult to see signs of
+  a straight line relationship.
+
+This data table has one row per patient.   The `Class` column divides the rows (patients) into two groups:
+
+* Patients with chronic kidney disease have 1 in the `Class` column.
+* Patients without chronic kidney disease have 0 in the `Class` column.
+
+You might correctly speculate that patients with chronic kidney disease tend to have *both*:
+
+* low hemoglobin (mostly because the kidney makes the hormone that stimulates
+  the production of red blood cells, that contain hemoglobin)
+* high creatinine (because the kidneys cannot clear creatinine from the blood).
+
+Maybe the left part of the plot has the chronic kidney disease patients, and the right part has the patients without chronic kidney disease.
+
+## Select patients with chronic kidney disease (CKD)
+
+Make a new data frame called `ckd_patients` that contains only the patients labeled as having CKD.  Plot the Hemoglobin against Serum Creatinine for these patients.
+
+```{python}
+#<- ckd_patients = ...
+ckd_patients = ckd[ckd['Class'] == 1]
+ckd_patients.plot.scatter('Hemoglobin', 'Serum Creatinine')
+```
+
+```{python}
+_ = ok.grade('q_1_ckd_patients')
+```
+
+Convert these Hemoglobin and Serum Creatinine values to Numpy arrays, for efficiency.
+
+```{python}
+#<- hgb_ckd = ...
+#<- creat_ckd = ...
+hgb_ckd = np.array(ckd_patients['Hemoglobin'])
+creat_ckd = np.array(ckd_patients['Serum Creatinine'])
+```
+
+```{python}
+_ = ok.grade('q_2_ckd_xy')
+```
+
+Find the best (least-squares) line fitting `hgb_ckd` (on the x axis) to `creat_ckd` (on the y axis).
+
+You may want to use the `ss_any_line` function from [using minimize]({{
+site.baseurl }}/chapters/08/using_minimize).
+
+```{python}
+def ss_any_line(c_s, x_values, y_values):
+    c, s = c_s
+    predicted = c + x_values * s
+    error = y_values - predicted
+    return np.sum(error ** 2)
+
+#<- best_c_ckd, best_s_ckd = ...
+best_c_ckd, best_s_ckd = minimize(ss_any_line, [25, -1],
+                                  args=(hgb_ckd, creat_ckd)).x
+#<->
+# Print the values.
+print(best_c_ckd, best_s_ckd)
+```
+
+```{python}
+_ = ok.grade('q_3_ls_ckd')
+```
+
+The next question is --- can we trust this slope?  Or could the slope the negative have plausibly come about if we had drawn a random sample in a world where there is no linear relationship between the Hemoglobin and the Serum Creatinine, in the CKD patients.
+
+Use permutation to calculate the *sampling distribution* of the slope.  See
+[inference on slopes]({{ site.baseurl }}/chapters/08/inference_on_slopes) for
+inspiration.  Take 1000 samples for the sampling distribution, otherwise you
+will find the calculation takes a fairly long time.
+
+```{python}
+#<-
+# To store samples for the sampling distribution
+n_samples = 1000
+fake_slopes = np.zeros(n_samples)
+#<-
+#<- ...
+shuffled_creat = creat_ckd.copy()
+for i in np.arange(n_samples):
+    np.random.shuffle(shuffled_creat)
+    c, s = minimize(ss_any_line, [25, -1], args=(hgb_ckd, shuffled_creat)).x
+    fake_slopes[i] = s
+#<->
+# Show a histogram of the sampling distribution
+plt.hist(fake_slopes);
+```
+
+```{python}
+_ = ok.grade('q_4_fake_slopes')
+```
+
+Calculate the proportion of the sampling distribution that is less than or equal to the observed best slope:
+
+```{python}
+#<- p_slope = ...
+p_slope = np.count_nonzero(fake_slopes <= best_s_ckd) / n_samples
+#<->
+# Show proportion.
+p_slope
+```
+
+```{python}
+_ = ok.grade('q_5_p_slope')
+```
+
+Looking back at the original plot of the CKD patients' values, we start to wonder whether the lowest and the highest values for Hemoglobin might be having an undue effect on the slope of the line.
+
+Calculate the mean and standard deviation of the `hgb_ckd` values.
+
+Make new arrays from which you have dropped the elements in `hgb_ckd` and
+`creat_ckd` corresponding to Hemoglobin values lower than the mean minus 2.5
+standard deviations, or higher than the mean plus 2.5 standard deviations.
+
+*Hint*: consider `logical_and` or `np.abs`.
+
+```{python}
+#<- hgb_clean = ...
+#<- creat_clean = ...
+mu, sd = np.mean(hgb_ckd), np.std(hgb_ckd)
+z = (hgb_ckd - mu) / sd
+not_outliers = np.abs(z) <= 2.5
+hgb_clean = hgb_ckd[not_outliers]
+creat_clean = creat_ckd[not_outliers]
+#<->
+# Plot the new arrays.
+plt.plot(hgb_clean, creat_clean, 'o')
+```
+
+
+```{python}
+_ = ok.grade('q_6_cleaned')
+```
+
+Recalculate the best-fit slope for these arrays, from which you have dropped
+the elements corresponding to extreme values.
+
+```{python}
+#<- best_c_clean, best_s_clean = ...
+best_c_clean, best_s_clean = minimize(ss_any_line, [25, -1],
+                                      args=(hgb_clean, creat_clean)).x
+#<->
+# Print the values.
+print(best_c_clean, best_s_clean)
+```
+
+```{python}
+_ = ok.grade('q_7_ls_clean')
+```
+
+Use permutation to recalculate the sampling distribution for this slope.
+Again, calculate 1000 samples rather than the standard 10000, in order to save
+time.
+
+
+```{python}
+#<-
+# To store samples for the sampling distribution
+n_samples = 1000
+fake_slopes_clean = np.zeros(n_samples)
+#<-
+#<- ...
+shuffled_creat_clean = creat_clean.copy()
+for i in np.arange(n_samples):
+    np.random.shuffle(shuffled_creat_clean)
+    c, s = minimize(ss_any_line, [25, -1],
+                    args=(hgb_clean, shuffled_creat_clean)).x
+    fake_slopes_clean[i] = s
+#<->
+# Show a histogram of the sampling distribution
+plt.hist(fake_slopes_clean);
+```
+
+```{python}
+_ = ok.grade('q_8_fake_slopes_clean')
+```
+
+Calculate the proportion of the new sampling distribution that is less than or
+equal to the observed best slope:
+
+```{python}
+#<- p_slope_clean = ...
+p_slope_clean = np.count_nonzero(fake_slopes_clean <= best_s_clean) / n_samples
+#<->
+# Show proportion.
+p_slope_clean
+```
+
+```{python}
+_ = ok.grade('q_9_p_slope_clean')
+```
+
+Are you still convinced by the negative linear relationship between hemoglobin and serum creatinine?
+
+## Done
+
+You're finished with the assignment!  Be sure to...
+
+- **run all the tests** (the next cell has a shortcut for that),
+- **Save and Checkpoint** from the "File" menu.
+- Finally, **restart** the kernel for this notebook, and **run all the cells**,
+  to check that the notebook still works without errors.  Use the
+  "Kernel" menu, and choose "Restart and run all".  If you find any
+  problems, go back and fix them, save the notebook, and restart / run
+  all again, before submitting.  When you do this, you make sure that
+  we, your humble markers, will be able to mark your notebook.
+
+```{python}
+# For your convenience, you can run this cell to run all the tests at once!
+import os
+_ = [ok.grade(q[:-3]) for q in os.listdir("tests") if q.startswith('q')]
+```
