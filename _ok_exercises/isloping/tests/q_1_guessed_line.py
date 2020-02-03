@@ -25,6 +25,31 @@ test = {
         },
         {
           'code': r"""
+          >>> # You appear to have the result of a "minimize", but the
+          >>> # answer should be a number for the sum of squares for the
+          >>> # guessed slope, rather than the best slope.
+          >>> # Here a minimize results object.
+          >>> hasattr(ss_guessed, 'fun')
+          False
+          >>> # Here an array with more than one element.
+          >>> hasattr(ss_guessed, 'size') and ss_guessed.size > 1
+          False
+          """,
+          'hidden': False,
+          'locked': False
+        },
+        {
+          'code': r"""
+          >>> # The answer should be a number for the sum of squares for the
+          >>> # guessed slope, rather than the best slope.
+          >>> np.isclose(ss_guessed, 707.715)
+          False
+          """,
+          'hidden': False,
+          'locked': False
+        },
+        {
+          'code': r"""
           >>> np.isclose(ss_guessed, 13928.14)
           True
           """,
