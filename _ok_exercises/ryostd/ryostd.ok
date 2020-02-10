@@ -1,0 +1,15 @@
+
+{
+  "name": "ryostd",
+  "src": [
+    "ryostd.ipynb"
+  ],
+  "tests": {
+      "tests/q*.py": "ok_test"
+  },
+  "protocols": [
+      "file_contents",
+      "grading",
+      "backup"
+  ]
+}

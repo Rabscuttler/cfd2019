@@ -1,0 +1,197 @@
+---
+jupyter:
+  jupytext:
+    split_at_heading: true
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.1'
+      jupytext_version: 1.2.4
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# Roll your own standardize
+
+The world nearly ended, and you have lost most of Numpy.
+
+All you have left is:
+
+* `np.array`.  You can make arrays, and these will add, subtract,
+  multiply, divide and so on.
+* `np.sum`. Luckily the internet saved the code for the `sum` function
+  as well as:
+* `np.sqrt`;  You can also take the square root.
+
+But that's all that's left - you have no other functions in Numpy.
+
+As a well-trained data scientist, you need functions to:
+
+* Calculate the mean of an array.
+* Calculate the variance of an array.
+* Calculate the standard deviation of an array.
+* Return the array in standard units.
+
+This next cell makes you a new reduced version of the Numpy module.
+
+```{python}
+# This cell makes a tiny fake 'np' module with the things you can use.
+# Run it to put the guard-rails in place!
+import numpy as old_np  # Forbidden Numpy with funny name.
+# Set precision of printing for neatness
+old_np.set_printoptions(precision=4, suppress=True)
+class np:  # Fake np module with stuff you can use.
+    sum = old_np.sum
+    array = old_np.array
+    sqrt = old_np.sqrt
+```
+
+Here are some arrays you can test your functions with:
+
+```{python}
+test1 = np.array([7.83, 11.33, 13.38, 5.18, 11.75, 9.65,
+                  7.78, 9.68, 13.08, 10.])
+test2 = np.array([15.03, -1.79, 8.45, 24.92, -4.52, 9.19,
+                  -38.60, -14.42])
+test3 = np.array([11, 13, 18, 7, 12, 8, 1, 3, 5, 13, 11, 1, 15, -2, -3])
+```
+
+Now define a function `my_mean` that calculates the mean of its only argument, an array `arr`:
+
+```{python}
+#<- def my_mean(arr):
+#<-     ....
+def my_mean(arr):
+    return np.sum(arr) / len(arr)
+```
+
+Test your function with these print statements, that show the mean as
+calculated by you, and by the full Numpy from the past.
+
+The should show the same result printed twice.
+
+```{python}
+print(my_mean(test1), old_np.mean(test1))
+print(my_mean(test2), old_np.mean(test2))
+print(my_mean(test3), old_np.mean(test3))
+```
+
+Next write a function called `my_var` that returns the *variance* for the input array `arr`.  Remember, the *variance* is the mean squared deviation of the array.
+
+```{python}
+#<- def my_var(arr):
+#<-     ...
+def my_var(arr):
+    devs = arr - my_mean(arr)
+    return my_mean(devs ** 2)
+```
+
+Test your function with these print statements.
+
+```{python}
+print(my_var(test1), old_np.var(test1))
+print(my_var(test2), old_np.var(test2))
+print(my_var(test3), old_np.var(test3))
+```
+
+Write a function `my_std` to calculate the *standard deviation* of
+`arr`:
+
+```{python}
+#<- def my_std(arr):
+#<-     ...
+def my_std(arr):
+    return np.sqrt(my_var(arr))
+```
+
+Test your function with these print statements.
+
+```{python}
+print(my_std(test1), old_np.std(test1))
+print(my_std(test2), old_np.std(test2))
+print(my_std(test3), old_np.std(test3))
+```
+
+Now write a function `my_standard_units` that returns an array `arr` in standard units:
+
+```{python}
+#<- def my_standard_units(arr):
+#<-     ...
+def my_standard_units(arr):
+    return (arr - my_mean(arr)) / my_std(arr)
+```
+
+This prints out the mean and standard deviation of your output arrays.
+The mean should be very close to 0, and the standard deviation should be
+very close to 1.
+
+```{python}
+su1 = my_standard_units(test1)
+print(my_mean(su1), my_std(su1))
+su2 = my_standard_units(test1)
+print(my_mean(su2), my_std(su2))
+su3 = my_standard_units(test1)
+print(my_mean(su3), my_std(su3))
+```
+
+## Sample variance, sample standard deviation
+
+Call the sum of squared deviations in an array $SS$.  Call the number of
+elements in an array $n$.
+
+The definition we have used so far for the variance is the mean of the
+(squared deviations from the mean).  Because of the definition of the
+mean, could also write this as $SS / n$.
+
+In fact there are two common definitions for variance.  The definition
+above is often called the *population variance*.  Another common
+definition of variance is the *sample variance*. See [this Wikipedia
+section on
+variance](https://en.wikipedia.org/wiki/Variance#Population_variance_and_sample_variance)
+for more detail.
+
+The *sample variance* a very slight tweak to the population variance.
+It is the (sum of the squared deviation from the mean) divided by (the
+number of elements minus 1).  This is $SS / (n - 1)$ in the symbols
+above.
+
+The matching *sample standard deviation* is the square root of the
+sample variance.
+
+Make a function `my_sample_var` to calculate the *sample variance*:
+
+```{python}
+#<- def my_sample_var(arr):
+#<-     ...
+def my_sample_var(arr):
+    devs = arr - my_mean(arr)
+    return np.sum(devs ** 2) / (len(arr) - 1)
+```
+
+Test your function with these print statements.
+
+```{python}
+print(my_sample_var(test1), old_np.var(test1, ddof=1))
+print(my_sample_var(test2), old_np.var(test2, ddof=1))
+print(my_sample_var(test3), old_np.var(test3, ddof=1))
+```
+
+Make a function `my_sample_std` to calculate the *sample standard
+deviation*:
+
+```{python}
+#<- def my_sample_std(arr):
+#<-     ...
+def my_sample_std(arr):
+    return np.sqrt(my_sample_var(arr))
+```
+
+Test your function with these print statements.
+
+```{python}
+print(my_sample_std(test1), old_np.std(test1, ddof=1))
+print(my_sample_std(test2), old_np.std(test2, ddof=1))
+print(my_sample_std(test3), old_np.std(test3, ddof=1))
+```
