@@ -86,8 +86,7 @@ that, we should look at the data.
 Make a scatter plot of the data.  It's conventional to put the column we will try to predict on the vertical axis and the other column on the horizontal axis.
 
 ```{python}
-#<- ...
-faithful.plot.scatter('duration', 'wait')
+...
 ```
 
 ## Question 2
@@ -122,24 +121,13 @@ containing the eruption durations and waiting times in standard units.
 (standard units)"`.
 
 ```{python for_assignment_type=student}
-#<- duration_mean = ...
-#<- duration_std = ...
-#<- wait_mean = ...
-#<- wait_std = ...
-duration = faithful['duration']
-wait = faithful['wait']
-duration_mean = np.mean(duration)
-duration_std = np.std(duration)
-wait_mean = np.mean(wait)
-wait_std = np.std(wait)
-
-#<--
+duration_mean = ...
+duration_std = ...
+wait_mean = ...
+wait_std = ...
 faithful_standard = pd.DataFrame()
-#<- faithful_standard["duration (standard units)"] = ...
-faithful_standard["duration (standard units)"] = (duration - duration_mean) / duration_std
-#<- faithful_standard["wait (standard units)"] = ...
-faithful_standard["wait (standard units)"] = (wait - wait_mean) / wait_std
-#<->
+faithful_standard["duration (standard units)"] = ...
+faithful_standard["wait (standard units)"] = ...
 # Show the new data frame.
 faithful_standard
 ```
@@ -154,8 +142,7 @@ ok.grade('q1_3');
 Plot the data again, but this time in standard units.
 
 ```{python}
-#<- ...
-faithful_standard.plot.scatter('duration (standard units)', 'wait (standard units)')
+...
 ```
 
 You'll notice that this plot looks exactly the same as the last one!
@@ -183,10 +170,7 @@ correlation between eruption duration and waiting time in this dataset?
 *Compute* the correlation `r`.  *Hint:* Use `faithful_standard`. The Correlation section in the textbook explains how to do this.
 
 ```{python}
-#<- r = ... 
-r = np.mean(faithful_standard['duration (standard units)'] *
-            faithful_standard['wait (standard units)'])
-#<->
+r = ... 
 r
 ```
 
@@ -247,11 +231,7 @@ from scipy.optimize import minimize
 Calculate the least-squares intercept and slope for the *original* duration and wait times (not standardized):
 
 ```{python}
-#<- intercept, slope = ...
-intercept, slope = minimize(ss_any_line, [30, 10],
-                            args=(faithful['duration'],
-                                  faithful['wait'])).x
-#<->
+intercept, slope = ...
 intercept, slope
 ```
 
@@ -276,12 +256,8 @@ and for an eruption that lasts 5 minutes.
 <!-- #endregion -->
 
 ```{python}
-#<- two_minute_predicted_waiting_time = ...
-two_minute_predicted_waiting_time = intercept + slope * 2
-#<- five_minute_predicted_waiting_time = ...
-five_minute_predicted_waiting_time = intercept + slope * 5
-
-#<->
+two_minute_predicted_waiting_time = ...
+five_minute_predicted_waiting_time = ...
 # Here is a helper function to print out your predictions
 # (you don't need to modify it):
 def print_prediction(duration, predicted_waiting_time):
@@ -316,9 +292,7 @@ are.)  Put these numbers into a new variable called
 loop; use array arithmetic instead.
 
 ```{python}
-#<- faithful_predictions = ...
-faithful_predictions = intercept + slope * faithful['duration']
-#<->
+faithful_predictions = ...
 faithful_predictions
 ```
 
@@ -340,16 +314,11 @@ as a new column called `"residual"`
 loop.
 
 ```{python}
-#<-
 # Make a copy of the original table to start.
 faithful_residuals = faithful.copy()
 # Fill in the new column.
-#<-
-#<- residuals = ...
-residuals = faithful['wait'] - faithful_predictions
-#<- faithful_residuals...
-faithful_residuals['residual'] = residuals
-#<->
+residuals = ...
+faithful_residuals...
 faithful_residuals.head()
 ```
 
@@ -400,14 +369,9 @@ this line, what is the predicted waiting time for an eruption that lasts
 0 minutes?  2.5 minutes?  An hour?
 
 ```{python}
-#<- zero_minute_predicted_waiting_time = ...
-zero_minute_predicted_waiting_time = intercept
-#<- two_point_five_minute_predicted_waiting_time = ...
-two_point_five_minute_predicted_waiting_time = intercept + slope * 2.5
-#<- hour_predicted_waiting_time = ...
-hour_predicted_waiting_time = intercept * slope * 60
-
-#<->
+zero_minute_predicted_waiting_time = ...
+two_point_five_minute_predicted_waiting_time = ...
+hour_predicted_waiting_time = ...
 print_prediction(0, zero_minute_predicted_waiting_time)
 print_prediction(2.5, two_point_five_minute_predicted_waiting_time)
 print_prediction(60, hour_predicted_waiting_time)

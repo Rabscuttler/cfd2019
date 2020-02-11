@@ -6,7 +6,7 @@ test = {
       'cases': [
         {
           'code': r"""
-          >>> abs(sum(faithful_residuals.column(3))) <= 1e-8
+          >>> abs(sum(faithful_residuals['residual'])) <= 1e-4
           True
           """,
           'hidden': False,

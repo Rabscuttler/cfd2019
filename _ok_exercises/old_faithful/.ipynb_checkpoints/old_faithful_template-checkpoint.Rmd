@@ -1,0 +1,439 @@
+---
+jupyter:
+  jupytext:
+    split_at_heading: true
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.1'
+      jupytext_version: 1.2.4
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# Old faithful
+
+This exercise gives you some hands-on practice with linear regression.
+
+
+The exercise comes from the Summer 2017 [Berkeley course
+materials](https://github.com/data-8/data8assets) with thanks.
+
+
+```{python}
+# Run this cell, but please don't change it.
+
+# These lines import the Numpy and Datascience modules.
+import numpy as np
+import pandas as pd
+from datascience import *
+
+# These lines do some fancy plotting magic.
+import matplotlib
+# %matplotlib inline
+import matplotlib.pyplot as plots
+plots.style.use('fivethirtyeight')
+import warnings
+warnings.simplefilter('ignore', FutureWarning)
+
+# These lines load the tests.
+from client.api.notebook import Notebook
+ok = Notebook('old_faithful.ok')
+```
+
+# 1. How Faithful is Old Faithful? 
+
+(Note: clever title comes from [here](http://web.pdx.edu/~jfreder/M212/oldfaithful.pdf).)
+
+Old Faithful is a geyser in Yellowstone National Park in the central United States.  It's famous for erupting on a fairly regular schedule.  You can see a video below.
+
+```{python}
+# For the curious: this is how to display a YouTube video in a
+# Jupyter notebook.  The argument to YouTubeVideo is the part
+# of the URL (called a "query parameter") that identifies the
+# video.  For example, the full URL for this video is:
+#   https://www.youtube.com/watch?v=wE8NDuzt8eg
+from IPython.display import YouTubeVideo
+YouTubeVideo("wE8NDuzt8eg")
+```
+
+Some of Old Faithful's eruptions last longer than others.  When it has a long eruption, there's generally a longer wait until the next eruption.
+
+If you visit Yellowstone, you might want to predict when the next eruption will happen, so you can see the rest of the park and come to see the geyser when it happens.  Today, we will use a dataset on eruption durations and waiting times to see if we can make such predictions accurately with linear regression.
+
+The dataset has one row for each observed eruption.  It includes the following columns:
+- **duration**: Eruption duration, in minutes
+- **wait**: Time between this eruption and the next, also in minutes
+
+Run the next cell to load the dataset.
+
+```{python}
+faithful = pd.read_csv("faithful.csv")
+faithful
+```
+
+We would like to use linear regression to make predictions, but that won't work well if the data aren't roughly linearly related.  To check that, we should look at the data.
+
+#### Question 1
+Make a scatter plot of the data.  It's conventional to put the column we will try to predict on the vertical axis and the other column on the horizontal axis.
+
+```{python}
+#<- ...
+faithful.plot.scatter('duration', 'wait')
+```
+
+#### Question 2
+
+Look at the scatter plot. Do eruption duration and waiting time have a rough straight line relationship? 
+
+
+*Write your answer here, replacing this text.*
+
+
+We're going to continue with the provisional assumption that they are linearly related, so it's reasonable to use linear regression to analyze this data.
+
+We'd next like to plot the data in standard units.  Recall that, if `nums` is an array of numbers, then
+
+    (nums - np.mean(nums)) / np.std(nums)
+
+...is an array of those numbers in standard units.
+
+#### Question 3
+Compute the mean and standard deviation of the eruption durations and waiting times.  **Then** create a table called `faithful_standard` containing the eruption durations and waiting times in standard units.  (The columns should be named `"duration (standard units)"` and `"wait (standard units)"`.
+
+```{python for_assignment_type=student}
+duration_mean = ...
+duration_std = ...
+wait_mean = ...
+wait_std = ...
+
+faithful_standard = Table().with_columns(
+    "duration (standard units)", ...,
+    "wait (standard units)", ...)
+faithful_standard
+```
+
+```{python}
+ok.grade('q1_3');
+```
+
+#### Question 4
+Plot the data again, but this time in standard units.
+
+```{python}
+...
+```
+
+You'll notice that this plot looks exactly the same as the last one!  The data really are different, but the axes are scaled differently.  (The method `scatter` scales the axes so the data fill up the available space.)  So it's important to read the ticks on the axes.
+
+#### Question 5
+Among the following numbers, which would you guess is closest to the correlation between eruption duration and waiting time in this dataset?
+
+* -1
+* 0
+* 1
+
+
+*Write your answer here, replacing this text.*
+
+#### Question 6
+Compute the correlation `r`.  *Hint:* Use `faithful_standard`.  Section [13.1](https://www.inferentialthinking.com/chapters/13/1/correlation.html) explains how to do this.
+
+```{python}
+r = ...
+r
+```
+
+```{python}
+ok.grade('q1_6');
+```
+
+## 2. The regression line
+Recall that the correlation is the slope of the regression line when the data are put in standard units.
+
+The next cell plots the regression line in standard units:
+
+$$\text{waiting time (standard units)} = r \times \text{eruption duration (standard units)}.$$
+
+Then, it plots the original data again, for comparison.
+
+```{python}
+def plot_data_and_line(dataset, x, y, point_0, point_1):
+    """Makes a scatter plot of the dataset, along with a line passing through two points."""
+    dataset.scatter(x, y, label="data")
+    xs, ys = zip(point_0, point_1)
+    plots.plot(xs, ys, label="regression line")
+    plots.legend(bbox_to_anchor=(1.5,.8))
+
+plot_data_and_line(faithful_standard, 
+                   "duration (standard units)", 
+                   "wait (standard units)", 
+                   [-2, -2*r], 
+                   [2, 2*r])
+```
+
+<!-- #region -->
+How would you take a point in standard units and convert it back to original units?  We'd have to "stretch" its horizontal position by `duration_std` and its vertical position by `wait_std`.
+
+That means the same thing would happen to the slope of the line.
+
+Stretching a line horizontally makes it less steep, so we divide the slope by the stretching factor.  Stretching a line vertically makes it more steep, so we multiply the slope by the stretching factor.
+
+#### Question 1
+What is the slope of the regression line in original units?
+
+(If the "stretching" explanation is unintuitive, consult section [13.2](https://www.inferentialthinking.com/chapters/13/2/regression-line.html) in the textbook.)
+<!-- #endregion -->
+
+```{python}
+slope = ...
+slope
+```
+
+We know that the regression line passes through the point `(duration_mean, wait_mean)`.  You might recall from high-school algebra that the equation for the line is therefore:
+
+$$\text{waiting time} - \verb|wait_mean| = \texttt{slope} \times (\text{eruption duration} - \verb|duration_mean|)$$
+
+After rearranging that equation slightly, the intercept turns out to be:
+
+```{python}
+intercept = slope*(-duration_mean) + wait_mean
+intercept
+```
+
+```{python}
+ok.grade('q2_1');
+```
+
+<!-- #region -->
+## 3. Investigating the regression line
+The slope and intercept tell you exactly what the regression line looks like.  To predict the waiting time for an eruption, multiply the eruption's duration by `slope` and then add `intercept`.
+
+#### Question 1
+Compute the predicted waiting time for an eruption that lasts 2 minutes, and for an eruption that lasts 5 minutes.
+<!-- #endregion -->
+
+```{python}
+two_minute_predicted_waiting_time = ...
+five_minute_predicted_waiting_time = ...
+
+# Here is a helper function to print out your predictions
+# (you don't need to modify it):
+def print_prediction(duration, predicted_waiting_time):
+    print("After an eruption lasting", duration,
+          "minutes, we predict you'll wait", predicted_waiting_time,
+          "minutes until the next eruption.")
+
+print_prediction(2, two_minute_predicted_waiting_time)
+print_prediction(5, five_minute_predicted_waiting_time)
+```
+
+The next cell plots the line that goes between those two points, which is (a segment of) the regression line.
+
+```{python}
+plot_data_and_line(faithful, "duration", "wait", 
+                   [2, two_minute_predicted_waiting_time], 
+                   [5, five_minute_predicted_waiting_time])
+```
+
+#### Question 2
+Make predictions for the waiting time after each eruption in the `faithful` table.  (Of course, we know exactly what the waiting times were!  We are doing this so we can see how accurate our predictions are.)  Put these numbers into a column in a new table called `faithful_predictions`.  Its first row should look like this:
+
+|duration|wait|predicted wait|
+|-|-|-|
+|3.6|79|72.1011|
+
+*Hint:* Your answer can be just one line.  There is no need for a `for` loop; use array arithmetic instead.
+
+```{python}
+faithful_predictions = ...
+faithful_predictions
+```
+
+```{python}
+ok.grade("q3_2");
+```
+
+#### Question 3
+How close were we?  Compute the *residual* for each eruption in the dataset.  The residual is the actual waiting time minus the predicted waiting time.  Add the residuals to `faithful_predictions` as a new column called `"residual"`, naming the resulting table `faithful_residuals`.
+
+*Hint:* Again, your code will be much simpler if you don't use a `for` loop.
+
+```{python}
+faithful_residuals = ...
+faithful_residuals
+```
+
+```{python}
+ok.grade("q3_3");
+```
+
+Here is a plot of the residuals you computed.  Each point corresponds to one eruption.  It shows how much our prediction over- or under-estimated the waiting time.
+
+```{python}
+faithful_residuals.scatter("duration", "residual", color="r")
+```
+
+There isn't really a pattern in the residuals, which confirms that it was reasonable to try linear regression.  It's true that there are two separate clouds; the eruption durations seemed to fall into two distinct clusters.  But that's just a pattern in the eruption durations, not a pattern in the relationship between eruption durations and waiting times.
+
+## 4. How accurate are different predictions?
+Earlier, you should have found that the correlation is fairly close to 1, so the line fits fairly well on the training data.  That means the residuals are overall small (close to 0) in comparison to the waiting times.
+
+We can see that visually by plotting the waiting times and residuals together:
+
+```{python}
+faithful_residuals.scatter("duration", "wait", label="actual waiting time", color="blue")
+plots.scatter(faithful_residuals.column("duration"), faithful_residuals.column("residual"), label="residual", color="r")
+plots.plot([2, 5], [two_minute_predicted_waiting_time, five_minute_predicted_waiting_time], label="regression line")
+plots.legend(bbox_to_anchor=(1.7,.8));
+```
+
+However, unless you have a strong reason to believe that the linear regression model is true, you should be wary of applying your prediction model to data that are very different from the training data.
+
+#### Question 1
+In `faithful`, no eruption lasted exactly 0, 2.5, or 60 minutes.  Using this line, what is the predicted waiting time for an eruption that lasts 0 minutes?  2.5 minutes?  An hour?
+
+```{python}
+zero_minute_predicted_waiting_time = ...
+two_point_five_minute_predicted_waiting_time = ...
+hour_predicted_waiting_time = ...
+
+print_prediction(0, zero_minute_predicted_waiting_time)
+print_prediction(2.5, two_point_five_minute_predicted_waiting_time)
+print_prediction(60, hour_predicted_waiting_time)
+```
+
+```{python}
+ok.grade('q4_1');
+```
+
+**Question 2.** Do you believe any of these values are reliable predictions?  If you don't believe some of them, say why.
+
+
+*Write your answer here, replacing this text.*
+
+## 5. Divide and Conquer
+
+
+It appears from the scatter diagram that there are two clusters of points: one for durations around 2 and another for durations between 3.5 and 5. A vertical line at 3 divides the two clusters.
+
+```{python}
+faithful.scatter("duration", "wait", label="actual waiting time", color="blue")
+plots.plot([3, 3], [40, 100]);
+```
+
+The `standardize` function from lecture appears below, which returns a table of values in standard units.
+
+```{python}
+def standard_units(any_numbers):
+    "Convert any array of numbers to standard units."
+    return (any_numbers - np.mean(any_numbers)) / np.std(any_numbers)  
+
+def standardize(t):
+    """Return a table in which all columns of t are converted to standard units."""
+    t_su = Table()
+    for label in t.labels:
+        t_su = t_su.with_column(label + ' (su)', standard_units(t.column(label)))
+    return t_su
+```
+
+**Question 1.** Separately compute the regression coefficients *r* for all the points with a duration below 3 **and then** for all the points with a duration above 3. To do so, create a function that computes `r` from a table and pass it two different tables of points, `below_3` and `above_3`.
+
+```{python}
+def reg_coeff(t):
+    """Return the regression coefficient for columns 0 & 1."""
+    t_su = standardize(t)
+    ...
+
+below_3 = ...
+above_3 = ...
+below_3_r = reg_coeff(below_3)
+above_3_r = reg_coeff(above_3)
+print("For points below 3, r is", below_3_r, "; for points above 3, r is", above_3_r)
+```
+
+```{python}
+ok.grade('q5_1');
+```
+
+**Question 2.** Write functions `slope_of` and `intercept_of` below. 
+
+When you're done, the functions `wait_below_3` and `wait_above_3` should each use a different regression line to predict a wait time for a duration. The first function should use the regression line for all points with duration below 3. The second function should use the regression line for all points with duration above 3.
+
+```{python}
+def slope_of(t, r):
+    """Return the slope of the regression line for t in original units.
+    
+    Assume that column 0 contains x values and column 1 contains y values.
+    r is the regression coefficient for x and y.
+    """
+    ...
+
+def intercept_of(t, r):
+    """Return the slope of the regression line for t in original units."""
+    s = slope_of(t, r)
+    ...
+    
+below_3_a = slope_of(below_3, below_3_r)
+below_3_b = intercept_of(below_3, below_3_r)
+above_3_a = slope_of(above_3, above_3_r)
+above_3_b = intercept_of(above_3, above_3_r)
+
+def wait_below_3(duration):
+    return below_3_a * duration + below_3_b
+
+def wait_above_3(duration):
+    return above_3_a * duration + above_3_b
+```
+
+```{python}
+ok.grade('q5_2');
+```
+
+The plot below shows two different regression lines, one for each cluster!
+
+```{python}
+faithful.scatter(0, 1)
+plots.plot([1, 3], [wait_below_3(1), wait_below_3(3)])
+plots.plot([3, 6], [wait_above_3(3), wait_above_3(6)]);
+```
+
+**Question 3.** Write a function `predict_wait` that takes a `duration` and returns the predicted wait time using the appropriate regression line, depending on whether the duration is below 3 or greater than (or equal to) 3.
+
+```{python for_assignment_type=student}
+def predict_wait(duration):
+    """Return the wait predicted by the appropriate one of the two regression lines above."""
+    ...
+```
+
+```{python}
+ok.grade('q5_3');
+```
+
+The predicted wait times for each point appear below.
+
+```{python}
+faithful.with_column('predicted', faithful.apply(predict_wait, 'duration')).scatter(0)
+```
+
+**Question 4.** Do you think the predictions produced by `predict_wait` would be more or less accurate than the predictions from the regression line you created in section 2? How could you tell?
+
+
+*Write your answer here, replacing this text.*
+
+```{python}
+# For your convenience, you can run this cell to run all the tests at once!
+import os
+print("Running all tests...")
+_ = [ok.grade(q[:-3]) for q in os.listdir("tests") if q.startswith('q')]
+print("Finished running all tests.")
+```
+
+```{python}
+# Run this cell to submit your work *after* you have passed all of the test cells.
+# It's ok to run this cell multiple times. Only your final submission will be scored.
+
+_ = ok.submit()
+```
