@@ -25,10 +25,9 @@ materials](https://github.com/data-8/data8assets) with thanks.
 ```{python}
 # Run this cell, but please don't change it.
 
-# These lines import the Numpy and Datascience modules.
+# These lines import the Numpy and Pandas modules.
 import numpy as np
 import pandas as pd
-from datascience import *
 
 # These lines do some fancy plotting magic.
 import matplotlib
@@ -199,7 +198,7 @@ def plot_data_and_line(dataset, x, y, point_0, point_1):
     """Makes a scatter plot of the dataset, along with a line passing through two points."""
     dataset.plot.scatter(x, y, label="data")
     xs, ys = zip(point_0, point_1)
-    plt.plot(xs, ys, label="regression line")
+    plt.plot(xs, ys, label="regression line", color='red')
     plt.legend(bbox_to_anchor=(1.5,.8))
 
 plot_data_and_line(faithful_standard,
@@ -394,6 +393,136 @@ predictions?  If you don't believe some of them, say why.
 
 
 *Write your answer here, replacing this text.*
+
+## 5. Divide and Conquer
+
+
+It appears from the scatter diagram that there are two clusters of points: one
+for durations around 2 and another for durations between 3.5 and 5. A vertical
+line at 3 divides the two clusters.
+
+```{python}
+faithful.plot.scatter("duration", "wait", label="actual waiting time", color="blue")
+plt.plot([3, 3], [40, 100]);
+```
+
+The `standardize` function from the lecture appears below, which returns
+a table of values in standard units.
+
+```{python}
+def standard_units(any_numbers):
+    "Convert any array of numbers to standard units."
+    return (any_numbers - np.mean(any_numbers)) / np.std(any_numbers)
+
+
+def standardize(t):
+    """Return table for which all columns of t converted to standard units."""
+    t_su = pd.DataFrame()
+    for col_name in t:
+        t_su[col_name] = standard_units(t[col_name])
+    return t_su
+```
+
+**Question 1**. Separately compute the regression coefficients r for all the
+points with a duration below 3 **and then** for all the points with a duration
+above 3. To do so, create a function that computes `r` from a table and pass it
+two different tables of points, `below_3` and `above_3`.
+
+```{python}
+def reg_coeff(t):
+    """Return the regression coefficient for columns 0 & 1.
+
+    Use .iloc[:, 0] to get values for columns 0, etc.
+    """
+    t_su = standardize(t)
+    return np.mean(t_su.iloc[:, 0] * t_su.iloc[:, 1])
+
+below_3 = faithful[faithful['duration'] < 3]
+above_3 = faithful[faithful['duration'] > 3]
+below_3_r = reg_coeff(below_3)
+above_3_r = reg_coeff(above_3)
+print("For points below 3, r is", below_3_r, "; for points above 3, r is", above_3_r)
+```
+
+```{python}
+ok.grade('q5_1');
+```
+
+**Question 2.** Make separate lines to predict wait times.
+
+Use `minimize` to calculate separate regression lines for durations below 3, and those above 3.
+
+When you're done, the functions `wait_below_3` and `wait_above_3` below should
+each use a different regression line to predict a wait time for a duration. The
+first function should use the regression line for all points with duration
+below 3. The second function should use the regression line for all points with
+duration above 3.
+
+```{python}
+below_3_inter, below_3_slope = minimize(
+    ss_any_line,
+    [30, 10],
+    args=(below_3['duration'], below_3['wait'])).x
+above_3_inter, above_3_slope = minimize(
+    ss_any_line,
+    [30, 10],
+    args=(above_3['duration'], above_3['wait'])).x
+
+def wait_below_3(duration):
+    return below_3_inter + below_3_slope * duration
+
+
+def wait_above_3(duration):
+    return above_3_inter + above_3_slope * duration
+```
+
+```{python}
+ok.grade('q5_2');
+```
+
+The plot below shows two different regression lines, one for each cluster!
+
+```{python}
+faithful.plot.scatter(0, 1)
+plt.plot([1, 3], [wait_below_3(1), wait_below_3(3)], color='red')
+plt.plot([3, 6], [wait_above_3(3), wait_above_3(6)], color='red');
+```
+
+**Question 3.** Write a function `predict_wait` that takes a `duration` and
+returns the predicted wait time using the appropriate regression line,
+depending on whether the duration is below 3 or greater than (or equal to) 3.
+
+```{python for_assignment_type=student}
+def predict_wait(duration):
+    """ Return wait predicted by the matching regression line.
+
+    Return wait predicted by the appropriate one of the two regression lines
+    above.
+    """
+    if duration < 3:
+        return wait_below_3(duration)
+    return wait_above_3(duration)
+```
+
+```{python}
+ok.grade('q5_3');
+```
+
+The predicted wait times for each point appear below.
+
+```{python}
+faith_predicted = faithful.copy()
+faith_predicted['predicted'] = faithful['duration'].apply(predict_wait)
+ax = faith_predicted.plot.scatter('duration', 'wait')  # Overlay on previous.
+faith_predicted.plot.scatter('duration', 'predicted', ax=ax, color='red');
+```
+
+**Question 4.** Do you think the predictions produced by `predict_wait` would be more or less accurate than the predictions from the regression line you created in section 2? How could you tell?
+
+
+*Write your answer here, replacing this text.*
+
+
 
 
 ## Done
