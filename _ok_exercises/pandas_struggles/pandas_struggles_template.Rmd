@@ -1,0 +1,108 @@
+---
+jupyter:
+  jupytext:
+    split_at_heading: true
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.1'
+      jupytext_version: 1.2.4
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# Struggling with Pandas
+
+```{python}
+# Run this cell, but please don't change it.
+
+# These lines import the Numpy and Pandas modules.
+import numpy as np
+import pandas as pd
+
+# Safe Pandas
+pd.set_option('mode.chained_assignment','raise')
+```
+
+At the moment, the line below will cause a nasty error.
+
+This is because the file has some unusual (for English) characters, and it is not in the default [UTF8](https://en.wikipedia.org/wiki/UTF-8) encoding, that Pandas is expecting.
+
+In fact it uses something called `latin-1` encoding.  Investigate the help for Pandas `read_csv` and add a keyword argument to make the file load correctly.
+
+```{python}
+#<- my_data = pd.read_csv('nasty_stuff.csv')
+my_data = pd.read_csv('nasty_stuff.csv', encoding='latin-1')
+```
+
+Here is the contents of the data frame:
+
+```{python}
+my_data
+```
+
+We want the mean 'Cost'.  At the moment this will generate an error.  Try it:
+
+```{python tags=c("raises-exception")}
+my_data['Cost'].mean()
+```
+
+Show the data types of the columns with the `dtypes` attribute of the data frame:
+
+```{python}
+#<- ...
+my_data.dtypes
+```
+
+You will have found that the column type of 'Cost' is 'object' - meaning that it is not, as you hoped, a number type such as `int` or `float`.
+
+
+Make copy of the data frame using the `copy` attribute of `my_data`:
+
+```{python}
+#<- fixed_data = ...
+fixed_data = my_data.copy()
+```
+
+Fetch the 'Cost' column of `fixed_data` as a Series.  Don't forget to make this a copy.
+
+```{python}
+#<- fixed_cost = ...
+fixed_cost = fixed_data['Cost'].copy()
+#<->
+fixed_cost
+```
+
+Use `.iloc` to set the final value of 'fixed_cost' to `np.nan`, meaning, a missing value.  Then use the Pandas `to_numeric` function to convert `fixed_cost` to a numeric type.
+
+```{python}
+#<- fixed_cost...
+fixed_cost.iloc[-1] = np.nan
+fixed_cost = pd.to_numeric(fixed_cost)
+#<->
+fixed_cost
+```
+
+Finally use `loc` to replace the 'Cost' column in `fixed_data` and show the mean of the `fixed_data` 'Cost' column:
+
+```{python}
+#<- ...
+fixed_data.loc[:, 'Cost'] = fixed_cost
+#<->
+fixed_data.mean()
+```
+
+## Done
+
+You're finished with the assignment!  Be sure to...
+
+- **run all the tests** (the next cell has a shortcut for that),
+- **Save and Checkpoint** from the "File" menu.
+- Finally, **restart** the kernel for this notebook, and **run all the cells**,
+  to check that the notebook still works without errors.  Use the
+  "Kernel" menu, and choose "Restart and run all".  If you find any
+  problems, go back and fix them, save the notebook, and restart / run
+  all again, before submitting.  When you do this, you make sure that
+  we, your humble markers, will be able to mark your notebook.
