@@ -24,17 +24,20 @@ import pandas as pd
 
 # Safe Pandas
 pd.set_option('mode.chained_assignment','raise')
+
+# These lines load the tests.
+from client.api.notebook import Notebook
+ok = Notebook('pandas_struggles.ok')
 ```
 
 At the moment, the line below will cause a nasty error.
 
-This is because the file has some unusual (for English) characters, and it is not in the default [UTF8](https://en.wikipedia.org/wiki/UTF-8) encoding, that Pandas is expecting.
-
-In fact it uses something called `latin-1` encoding.  Investigate the help for Pandas `read_csv` and add a keyword argument to make the file load correctly.
+Try a different [encoding]({{ site.baseurl }}/chapters/07/text_encoding) to load this file correctly.
 
 ```{python}
+#- Modify the line below to make the file load correctly.
 #<- my_data = pd.read_csv('nasty_stuff.csv')
-my_data = pd.read_csv('nasty_stuff.csv', encoding='latin-1')
+my_data = pd.read_csv('nasty_stuff.csv', encoding='latin1')
 ```
 
 Here is the contents of the data frame:
@@ -49,7 +52,8 @@ We want the mean 'Cost'.  At the moment this will generate an error.  Try it:
 my_data['Cost'].mean()
 ```
 
-Show the data types of the columns with the `dtypes` attribute of the data frame:
+Show the data types of the columns with the `dtypes` attribute of the data
+frame:
 
 ```{python}
 #<- ...
@@ -75,23 +79,101 @@ fixed_cost = fixed_data['Cost'].copy()
 fixed_cost
 ```
 
-Use `.iloc` to set the final value of 'fixed_cost' to `np.nan`, meaning, a missing value.  Then use the Pandas `to_numeric` function to convert `fixed_cost` to a numeric type.
+Use `.loc` to set value with index label 2 of 'fixed_cost' to `np.nan`, meaning, a missing value.  Then use the Pandas `to_numeric` function to convert `fixed_cost` to a numeric type.
 
 ```{python}
 #<- fixed_cost...
-fixed_cost.iloc[-1] = np.nan
+fixed_cost.loc[2] = np.nan
 fixed_cost = pd.to_numeric(fixed_cost)
 #<->
 fixed_cost
 ```
 
-Finally use `loc` to replace the 'Cost' column in `fixed_data` and show the mean of the `fixed_data` 'Cost' column:
+Finally use `loc` to replace the 'Cost' column in `fixed_data` and calculate the mean of the `fixed_data` 'Cost' column:
 
 ```{python}
-#<- ...
+#<- mean_cost = ...
 fixed_data.loc[:, 'Cost'] = fixed_cost
+mean_cost = fixed_data.mean()
 #<->
-fixed_data.mean()
+mean_cost
+```
+
+```{python}
+_ = ok.grade('q_mean_cost')
+```
+
+## IMDB again
+
+Modify the cell below to load the `imdblet_latin.csv` file correctly.
+
+```{python}
+#<- films = pd.read_csv('imdblet_latin.csv')
+films = pd.read_csv('imdblet_latin.csv', encoding='latin1')
+#<->
+films.head()
+```
+
+Put the `Votes` column into its own Series with variable name `votes`. Don't
+forget "copy right".
+
+```{python}
+#<- votes = ...
+votes = films['Votes'].copy()
+#<->
+votes.head()
+```
+
+```{python}
+_ = ok.grade('q_votes')
+```
+
+One of the values has a colon in its text, so it cannot be converted to a number.  You can detect that situation with:
+
+```{python}
+bad_val = '29395:4'
+':' in bad_val
+```
+
+Write a recoding function to replace any values containing colons with `np.nan` (the missing value), and otherwise, convert the value to an `int`.
+
+```{python}
+#<-
+def dump_colons(v):
+#<-
+#<-     ...
+    if ':' in v:
+        return np.nan
+    return int(v)
+```
+
+Test your function with:
+
+```{python}
+print(dump_colons('32'))
+print(dump_colons('901'))
+print(dump_colons('901:3'))
+print(dump_colons('1:30'))
+```
+
+`apply` your function to the `votes` series to replace the bad value, with a colon:
+
+```{python}
+#<- fixed_votes = ...
+fixed_votes = votes.apply(dump_colons)
+#<->
+fixed_votes
+```
+
+Make a copy of the `films` data frame called `films_refixed`, and insert the fixed votes column:
+
+```{python}
+#<- films_refixed = ...
+films_refixed = films.copy()
+films_refixed.loc[:, 'Votes'] = fixed_votes
+#<->
+# Show the mean of the votes.
+films_refixed['Votes'].mean()
 ```
 
 ## Done
@@ -100,9 +182,9 @@ You're finished with the assignment!  Be sure to...
 
 - **run all the tests** (the next cell has a shortcut for that),
 - **Save and Checkpoint** from the "File" menu.
-- Finally, **restart** the kernel for this notebook, and **run all the cells**,
-  to check that the notebook still works without errors.  Use the
-  "Kernel" menu, and choose "Restart and run all".  If you find any
-  problems, go back and fix them, save the notebook, and restart / run
-  all again, before submitting.  When you do this, you make sure that
-  we, your humble markers, will be able to mark your notebook.
+- Finally, **restart** the kernel for this notebook, and **run all the
+  cells**, to check that the notebook still works without errors.  Use the
+  "Kernel" menu, and choose "Restart and run all".  If you find any problems,
+  go back and fix them, save the notebook, and restart / run all again, before
+  submitting.  When you do this, you make sure that we, your humble markers,
+  will be able to mark your notebook.
