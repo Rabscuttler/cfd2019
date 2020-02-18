@@ -70,6 +70,10 @@ Make copy of the data frame using the `copy` attribute of `my_data`:
 fixed_data = my_data.copy()
 ```
 
+```{python}
+_ = ok.grade('q_fixed_data')
+```
+
 Fetch the 'Cost' column of `fixed_data` as a Series.  Don't forget to make this a copy.
 
 ```{python}
@@ -87,6 +91,10 @@ fixed_cost.loc[2] = np.nan
 fixed_cost = pd.to_numeric(fixed_cost)
 #<->
 fixed_cost
+```
+
+```{python}
+_ = ok.grade('q_fixed_cost')
 ```
 
 Finally use `loc` to replace the 'Cost' column in `fixed_data` and calculate the mean of the `fixed_data` 'Cost' column:
@@ -156,24 +164,48 @@ print(dump_colons('901:3'))
 print(dump_colons('1:30'))
 ```
 
+```{python}
+_ = ok.grade('q_dump_colons')
+```
+
 `apply` your function to the `votes` series to replace the bad value, with a colon:
 
 ```{python}
 #<- fixed_votes = ...
 fixed_votes = votes.apply(dump_colons)
 #<->
-fixed_votes
+fixed_votes.tail()
 ```
 
-Make a copy of the `films` data frame called `films_refixed`, and insert the fixed votes column:
+```{python}
+_ = ok.grade('q_fixed_votes')
+```
+
+Make a copy of the `films` data frame called `films_refixed`, and insert the fixed votes column.
 
 ```{python}
 #<- films_refixed = ...
 films_refixed = films.copy()
 films_refixed.loc[:, 'Votes'] = fixed_votes
 #<->
-# Show the mean of the votes.
-films_refixed['Votes'].mean()
+films_refixed.tail()
+```
+
+```{python}
+_ = ok.grade('q_films_refixed')
+```
+
+Calculate the mean of the not-NaN votes.
+
+```{python}
+#<- mean_votes = ...
+mean_votes = films_refixed['Votes'].mean()
+#<->
+mean_votes
+```
+
+```{python}
+_ = ok.grade('q_mean_votes')
 ```
 
 ## Done
